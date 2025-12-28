@@ -7,4 +7,4 @@ A extension i made to disable chrome's cntrl+scroll feature including the - , + 
 - then pin it in ur extensions dropdown
 - then toggle it on and off.
 - have fun
-> $leepyz was here.
+> $Sleepyz was here.
