@@ -1,30 +1,26 @@
+const DEFAULT_ENABLED = true;
 function updateIcon(enabled) {
-  chrome.action.setIcon({
-    path: {
-      16: enabled ? "./src/active_icon16.png" : "./src/icon16.png",
-      96: enabled ? "./src/active_icon96.png" : "./src/icon96.png"
-    }
-  });
+  const path = enabled
+    ? { "16": "src/active_icon16.png", "96": "src/active_icon96.png" }
+    : { "16": "src/icon16.png", "96": "src/icon96.png" };
+  chrome.action.setIcon({ path });
 }
-
 chrome.runtime.onInstalled.addListener(() => {
-  chrome.storage.sync.set({
-    enabled: true,
-    whitelist: []
+  chrome.storage.local.get({ enabled: DEFAULT_ENABLED }, (res) => {
+    const enabled = !!res.enabled;
+    chrome.storage.local.set({ enabled });
+    updateIcon(enabled);
   });
-
-  updateIcon(true);
 });
-
-chrome.action.onClicked.addListener(async () => {
-  const data = await chrome.storage.sync.get("enabled");
-  const newState = !data.enabled;
-
-  chrome.storage.sync.set({ enabled: newState });
-  updateIcon(newState);
+chrome.runtime.onStartup.addListener(() => {
+  chrome.storage.local.get({ enabled: DEFAULT_ENABLED }, (res) => updateIcon(!!res.enabled));
 });
-
-chrome.runtime.onStartup.addListener(async () => {
-  const data = await chrome.storage.sync.get("enabled");
-  updateIcon(data.enabled ?? true);
+chrome.action.onClicked.addListener(() => {
+  chrome.storage.local.get({ enabled: DEFAULT_ENABLED }, (res) => {
+    const enabled = !res.enabled;
+    chrome.storage.local.set({ enabled }, () => {
+      updateIcon(enabled);
+      chrome.runtime.sendMessage({ type: "set-enabled", enabled });
+    });
+  });
 });
